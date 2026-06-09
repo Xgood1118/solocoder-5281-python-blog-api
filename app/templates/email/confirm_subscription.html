@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>确认订阅</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { background: #f9f9f9; border-radius: 8px; padding: 30px; }
+        .btn { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+        h1 { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>确认订阅 {{ site_name }}</h1>
+        <p>您好！</p>
+        <p>感谢您订阅 {{ site_name }}。请点击下面的按钮确认您的订阅：</p>
+        <p><a href="{{ confirm_url }}" class="btn">确认订阅</a></p>
+        <p>如果按钮无法点击，请复制以下链接到浏览器中打开：</p>
+        <p><small>{{ confirm_url }}</small></p>
+        <p>如果您没有发起此订阅请求，请忽略此邮件。</p>
+        <hr>
+        <p><small>{{ site_name }} - 博客系统</small></p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新文章通知</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { background: #f9f9f9; border-radius: 8px; padding: 30px; }
+        .btn { display: inline-block; padding: 12px 24px; background: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+        h1 { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>新文章发布</h1>
+        <p>您好！</p>
+        <p>{{ site_name }} 发布了一篇新文章：</p>
+        <h2>{{ article_title }}</h2>
+        <p><a href="{{ article_url }}" class="btn">阅读全文</a></p>
+        <p>如果链接无法点击，请复制以下链接到浏览器中打开：</p>
+        <p><small>{{ article_url }}</small></p>
+        <hr>
+        <p><small>您收到此邮件是因为您订阅了 {{ site_name }}。</small></p>
+    </div>
+</body>
+</html>

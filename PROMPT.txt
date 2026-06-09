@@ -1,0 +1,43 @@
+需求：Python FastAPI 博客后端 API，文章 / 标签 / 评论 / 订阅 / 全文检索 / 反垃圾。
+
+背景：组里博客系统想重写后端，要支持：富文本 / Markdown、标签、嵌套评论（2-3 层）、RSS 订阅、邮件订阅、MeiliSearch 全文检索、评论反垃圾（关键词 + 限频 + 人工审核）。技术栈 Python + FastAPI + SQLAlchemy 2.0（异步）+ MeiliSearch + SQLite。
+
+核心功能：
+- 文章：标题、slug、摘要、Markdown 正文、封面、分类、标签、作者、状态（草稿 / 已发布 / 已下线）
+- 标签 / 分类：树形分类（最多 2 层）、标签云
+- 嵌套评论：2-3 层楼中楼、@ 提及、点赞、举报
+- 订阅：RSS / Atom feed 生成、邮件订阅（输入邮箱→发送确认邮件→点击链接确认）
+- 全文检索：MeiliSearch 索引标题 / 摘要 / 正文 / 标签，中文分词用 jieba
+- 反垃圾：评论限频（同 IP 1 分钟 1 条）、关键词黑名单、链接数量限制、可疑进审核队列
+- 归档：按月 / 标签 / 分类聚合历史文章
+- 统计：阅读量、点赞数、评论数
+- 缓存：热门文章 Redis 缓存（10 分钟）
+- SEO：sitemap.xml、robots.txt、OG meta
+
+涉及模块：
+- `app/api/`：articles、tags、categories、comments、subscriptions、search
+- `app/models/`：SQLAlchemy 模型
+- `app/services/`：文章服务、评论服务、订阅服务、反垃圾引擎
+- `app/search/`：MeiliSearch 客户端、索引同步、查询
+- `app/feeds/`：RSS / Atom 生成
+- `app/tasks/`：Celery 风格异步任务（用 arq 或 FastAPI BackgroundTasks）
+- `app/email/`：邮件模板、发送
+
+注意事项：
+- slug 自动从标题生成（用 python-slugify），但允许用户手动覆盖；同分类下不能重复
+- 嵌套评论用 `parent_id` + `path` 物化路径（`/root/child/grand`），查子评论 `WHERE path LIKE '/root/child/%'`
+- 评论限频：用 Redis `SET rate_limit:comment:{ip} 1 EX 60 NX` 简单实现
+- 关键词黑名单存配置文件，启动时加载到内存 set，O(1) 匹配
+- 可疑评论进 `pending_comments` 表，运营后台审核通过才展示
+- MeiliSearch 索引同步：文章增删改后异步推送到 Meili（不要事务内同步，会卡）
+- 中文分词：MeiliSearch 自带分词一般够用，但 jieba 切 + 索引对长文更准
+- RSS 生成用 `feedgen` 库，2.0 / Atom 1.0 都支持
+- 邮件订阅：双确认（double opt-in），先发确认邮件，点了再发内容邮件（防垃圾）
+- 邮件模板用 Jinja2，避免在代码里拼 HTML
+- 阅读量用 Redis `INCR article:{id}:views`，定期同步到 DB
+- 缓存击穿：热门文章缓存过期瞬间用 singleflight 防击穿
+- 链接限制：评论里 URL > 3 个直接进审核
+- IP 黑名单：同 IP 24h 内发 10 条评论直接封禁
+- 审计日志：所有写操作记录
+- API 用 FastAPI dependency injection，user / db / cache 都在 Depends 里
+- 测试用 pytest + httpx AsyncClient，覆盖关键路径
